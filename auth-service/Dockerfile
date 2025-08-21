@@ -4,11 +4,10 @@ FROM golang:1.23 AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-
+COPY auth-service/go.mod auth-service/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY auth-service/. ./
 
 RUN go build -o auth-service .
 
