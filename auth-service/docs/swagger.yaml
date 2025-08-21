@@ -1,0 +1,99 @@
+basePath: /api/v1
+definitions:
+  user.AuthRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  user.LoginResponse:
+    properties:
+      access_token:
+        type: string
+      email:
+        type: string
+      permission:
+        items:
+          type: string
+        type: array
+      refresh_token:
+        type: string
+      role:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: integer
+    type: object
+  utils.ErrorResponse:
+    properties:
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+  utils.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      status:
+        type: boolean
+    type: object
+host: 127.0.0.1:9000
+info:
+  contact:
+    email: tranthanhsang.it.la@gmail.com
+    name: API Support
+  description: This is an auth server for cellar service.
+  license:
+    name: GNU
+    url: http://www.gnu.org/licenses/gpl-3.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Auth Service API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/user.AuthRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/user.LoginResponse'
+              type: object
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Login with email
+      tags:
+      - auth
+schemes:
+- http
+- https
+swagger: "2.0"
