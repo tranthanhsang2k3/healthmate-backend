@@ -30,8 +30,18 @@ jobs:
         working-directory: ./auth-service
         run: go mod tidy
 
+      - name: Wait for DB to be ready
+        run: sleep 10
+
+
       - name: Run tests
         working-directory: ./auth-service
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 2025
+          DB_USER: postgres
+          DB_PASSWORD: yourpassword
+          DB_NAME: healthmate_auth_test_service
         run: go test ./... -v
 
   docker-build-and-push:
