@@ -19,6 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     name: Run Tests for Auth Service
 
+    services:
+      postgres:
+        image: postgres:15
+        ports:
+          - 2025:5432
+        env:
+          POSTGRES_DB: healthmate_auth_test_service
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: yourpassword
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
