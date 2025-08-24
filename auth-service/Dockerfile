@@ -1,20 +1,22 @@
-# Dockerfile - user-service
-
 FROM golang:1.23 AS builder
 
 WORKDIR /app
-
-COPY auth-service/go.mod auth-service/go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
+COPY . ./
+RUN go build -o auth-service ./cmd
 
-COPY auth-service/. ./
+FROM ubuntu:22.04
 
-RUN go build -o auth-service .
+WORKDIR /app
 
-FROM gcr.io/distroless/base-debian11
+# Cài netcat + tzdata để chờ DB và xử lý timezone
+RUN apt-get update && apt-get install -y netcat tzdata ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/auth-service .
+COPY wait-for-it.sh .
+RUN chmod +x wait-for-it.sh
 
 EXPOSE 9000
 
-CMD ["./auth-service"]
+CMD ["./wait-for-it.sh", "postgres", "5432", "--", "./auth-service"]

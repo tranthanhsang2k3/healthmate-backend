@@ -43,7 +43,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/user.AuthRequest"
+                            "$ref": "#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.AuthRequest"
                         }
                     }
                 ],
@@ -59,7 +59,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/user.LoginResponse"
+                                            "$ref": "#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.LoginResponse"
                                         }
                                     }
                                 }
@@ -80,10 +80,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Register with email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register with email",
+                "parameters": [
+                    {
+                        "description": "Register request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Register successful",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
-        "user.AuthRequest": {
+        "github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.AuthRequest": {
             "type": "object",
             "required": [
                 "email",
@@ -99,7 +145,7 @@ const docTemplate = `{
                 }
             }
         },
-        "user.LoginResponse": {
+        "github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.LoginResponse": {
             "type": "object",
             "properties": {
                 "access_token": {
@@ -125,6 +171,36 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "permissions",
+                "roles"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

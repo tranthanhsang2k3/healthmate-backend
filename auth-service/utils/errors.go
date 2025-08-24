@@ -1,12 +1,18 @@
 package utils
 
+import "errors"
 
-const(
-	ErrorNotFound = "not_found"
-	ErrorInternal = "internal_error"
-	ErrorBadRequest = "bad_request"
-	ErrorUnauthorized = "unauthorized"
-	ErrorForbidden    = "forbidden"
+const (
+	ErrorNotFound              = "not_found"
+	ErrorInternal              = "internal_error"
+	ErrorBadRequest            = "bad_request"
+	ErrorUnauthorized          = "unauthorized"
+	ErrorForbidden             = "forbidden"
+)
+
+var (
+	ErrorEmptyRoleOrPermission = errors.New("roles and permissions cannot be empty")
+	ErrorUserAlreadyExists     = errors.New("user already exists")
 )
 
 type ErrorResponse struct {

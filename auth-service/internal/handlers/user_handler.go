@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/config"
 	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/internal/models/user"
 	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/internal/services"
 	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/utils"
@@ -48,6 +49,56 @@ func (h *UserHandler) LoginWithEmail() gin.HandlerFunc {
 			true,
 			resp,
 			"Login with email successfully",
+		))
+	}
+}
+
+// RegisterWithEmail godoc
+// @Summary Register with email
+// @Description Register with email
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param request body user.RegisterRequest true "Register request"
+// @Success 200 {object} utils.Response{} "Register successful"
+// @Failure 400 {object} utils.ErrorResponse "Invalid request"
+// @Failure 500 {object} utils.ErrorResponse "Internal server error"
+// @Router /auth/register [post]
+func (h *UserHandler) RegisterWithEmail() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req user.RegisterRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, utils.ErrorResponseFull(false, "Invalid request body: "+ err.Error()))
+			return
+		}
+
+		err := h.userService.RegisterWithEmail(c.Request.Context(), req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.ErrorResponseFull(false, "Registration failed: "+ err.Error()))
+			return
+		}
+
+		// Send OTP email
+		otpCode := utils.RandomOTP()
+
+		// Store OTP in Redis
+		err = config.SaveOTP(otpCode, req.Email)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.ErrorResponseFull(false, "Failed to store OTP: "+ err.Error()))
+			return
+		}
+
+		
+		err = services.SendOTPEmail(req.Email, otpCode)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, utils.ErrorResponseFull(false, "Failed to send OTP email: "+ err.Error()))
+			return
+		}
+		
+		c.JSON(http.StatusOK, utils.ResponseFull(
+			true,
+			nil,
+			"Registration successful",
 		))
 	}
 }

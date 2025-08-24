@@ -9,5 +9,6 @@ func LoginRouter(r *gin.Engine, userHandler *handlers.UserHandler) {
 	api := r.Group("/api/v1/auth")
 	{
 		api.POST("/login", userHandler.LoginWithEmail())
+		api.POST("/register", userHandler.RegisterWithEmail())
 	}
 }

@@ -18,6 +18,12 @@ type Config struct {
 	GinHost string
 	RedisHost string
 	RedisPort string
+	SendGridAPIKey string
+	JWTSecretKey string
+	SMTPHost     string
+	SMTPPort     string
+	SMTPUsername string
+	SMTPPassword string
 }
 
 func LoadConfig() *Config {
@@ -37,6 +43,12 @@ func LoadConfig() *Config {
 		GinHost: getEnv("GIN_HOST"),
 		RedisHost: getEnv("REDIS_HOST"),
 		RedisPort: getEnv("REDIS_PORT"),
+		SendGridAPIKey: getEnv("SENDGRID_API_KEY"),
+		JWTSecretKey: getEnv("JWT_SECRET_KEY"),
+		SMTPHost:     getEnv("SMTP_HOST"),
+		SMTPPort:     getEnv("SMTP_PORT"),
+		SMTPUsername: getEnv("SMTP_USERNAME"),
+		SMTPPassword: getEnv("SMTP_PASSWORD"),
 	}
 }
 

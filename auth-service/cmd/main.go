@@ -30,8 +30,12 @@ import (
 func main() {
 	conf := config.LoadConfig()
 	log :=  config.InitLogger(conf.AppConfig)
+
 	config.ConnectDatabase(conf, log)
-	config.InitRedisServer(conf)
+	config.InitRedisServer(conf, log)
+	sendGridConfig := services.NewSendGridConfig(conf.SendGridAPIKey, conf.SMTPUsername)
+	smtpConfig := services.NewSMTPConfig(conf.SMTPHost, conf.SMTPPort, conf.SMTPUsername, conf.SMTPPassword)
+	services.NewSendOTPService(sendGridConfig, smtpConfig, log)
 
 	r := gin.Default()
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

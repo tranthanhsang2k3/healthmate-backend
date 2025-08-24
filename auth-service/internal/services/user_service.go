@@ -13,6 +13,7 @@ import (
 )
 
 type UserService interface {
+	RegisterWithEmail(ctx context.Context, req user.RegisterRequest) error
 	LoginWithEmail(ctx context.Context, req user.AuthRequest) (*user.LoginResponse, error)
 }
 
@@ -66,4 +67,25 @@ func(s *UserServiceImpl) LoginWithEmail(ctx context.Context, req user.AuthReques
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
+}
+
+func(s *UserServiceImpl) RegisterWithEmail(ctx context.Context, req user.RegisterRequest) error{
+	if len(req.Role) == 0 || len(req.Permission) == 0 {
+		s.log.Error("Roles and permissions cannot be empty")
+		return utils.ErrorEmptyRoleOrPermission
+	}
+
+	userExists, _ := s.userRepo.Login(ctx, req.Email);
+	if userExists != nil {
+		s.log.Error("User already exists")
+		return utils.ErrorUserAlreadyExists
+	}
+
+	userEntity := user.RegisterUserToEntity(req)
+	if err := s.userRepo.Register(ctx, userEntity); err != nil {
+		s.log.Error("Failed to register user: ", err)
+		return err
+	}
+
+	return nil
 }

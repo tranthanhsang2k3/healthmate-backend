@@ -9,6 +9,7 @@ import (
 
 type UserRepository interface {
 	Login(ctx context.Context, email string)(*user.Users, error)
+	Register(ctx context.Context, user *user.Users)(error)
 }
 
 type UserRepoImpl struct {
@@ -29,4 +30,11 @@ func(r *UserRepoImpl) Login(ctx context.Context, email string)(*user.Users, erro
 	}
 
 	return &userEntity, nil
+}
+
+func(r *UserRepoImpl) Register(ctx context.Context, user *user.Users)(error){
+	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
+		return err
+	}
+	return nil
 }

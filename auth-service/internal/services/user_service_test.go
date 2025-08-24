@@ -2,12 +2,14 @@ package services
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/internal/models/user"
+	"github.com/tranthanhsang2k3/healthmate-backend/auth-service/utils"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -24,6 +26,13 @@ func(m *MockUserRepo) Login(ctx context.Context, email string) (*user.Users, err
 	}
 	return args.Get(0).(*user.Users), args.Error(1)
 }
+
+// Add Register method to satisfy repositories.UserRepository interface
+func (m *MockUserRepo) Register(ctx context.Context, u *user.Users) error {
+	args := m.Called(ctx, u)
+	return args.Error(0)
+}
+
 
 func TestLoginWithEmailSuccess(t *testing.T) {
 	// Setup mock repository and logger
@@ -111,4 +120,87 @@ func TestLoginWithEmail_GenerateJwtError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, resp)
+}
+
+func TestRegisterService_Success(t *testing.T) {
+    mockRepo := new(MockUserRepo)
+    service := NewUserService(mockRepo, logrus.New())
+
+    req := &user.RegisterRequest{
+        Email:      "test@example.com",
+        Password:   "securepass",
+        Role:      []string{"user"},
+        Permission: []string{"read"},
+    }
+
+    mockRepo.On("Register", mock.Anything, mock.AnythingOfType("*user.Users")).Return(nil)
+
+    err := service.RegisterWithEmail(context.Background(), *req)
+    assert.NoError(t, err)
+    mockRepo.AssertExpectations(t)
+}
+
+func TestRegisterService_UserAlreadyExists(t *testing.T) {
+    // Arrange
+    mockRepo := new(MockUserRepo)
+    service := NewUserService(mockRepo, logrus.New())
+
+    req := &user.RegisterRequest{
+        Email:      "test@example.com",
+        Password:   "securepass",
+        Role:       []string{"user"},
+        Permission: []string{"read"},
+    }
+    existingUser := &user.Users{
+        Email: "test@example.com",
+    }
+
+    mockRepo.On("Login", mock.Anything, req.Email).Return(existingUser, nil)
+
+    err := service.RegisterWithEmail(context.Background(), *req)
+
+    assert.EqualError(t, err, utils.ErrorUserAlreadyExists.Error())
+    mockRepo.AssertNotCalled(t, "Register", mock.Anything, mock.Anything)
+    
+    mockRepo.AssertExpectations(t)
+}
+
+func TestRegisterWithEmail_EmptyRoleOrPermission(t *testing.T) {
+	mockRepo := new(MockUserRepo)
+	service := NewUserService(mockRepo, logrus.New())
+
+	req := &user.RegisterRequest{
+		Email:      "test@example.com",
+		Password:   "securepass",
+		Role:      []string{},
+		Permission: []string{},
+	}
+
+
+	err := service.RegisterWithEmail(context.Background(), *req)
+	assert.EqualError(t, err, utils.ErrorEmptyRoleOrPermission.Error())
+	mockRepo.AssertNotCalled(t, "Register", mock.Anything, mock.Anything)
+}
+
+func TestRegisterWithEmail_RepositoryError(t *testing.T) {
+    mockRepo := new(MockUserRepo)
+    service := NewUserService(mockRepo, logrus.New())
+
+    req := user.RegisterRequest{
+        Email:      "test@example.com",
+        Password:   "securepass",
+        Role:       []string{"user"},
+        Permission: []string{"read"},
+    }
+
+    // Giả lập người dùng chưa tồn tại
+    mockRepo.On("Login", mock.Anything, req.Email).Return(nil, nil)
+    // Giả lập lỗi từ repository khi đăng ký
+    repoError := errors.New("database connection failed")
+    mockRepo.On("Register", mock.Anything, mock.AnythingOfType("*user.Users")).Return(repoError)
+
+    err := service.RegisterWithEmail(context.Background(), req)
+
+    assert.EqualError(t, err, repoError.Error())
+    mockRepo.AssertExpectations(t)
 }

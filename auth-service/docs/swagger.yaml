@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  user.AuthRequest:
+  github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.AuthRequest:
     properties:
       email:
         type: string
@@ -11,7 +11,7 @@ definitions:
     - email
     - password
     type: object
-  user.LoginResponse:
+  github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.LoginResponse:
     properties:
       access_token:
         type: string
@@ -29,6 +29,27 @@ definitions:
         type: array
       user_id:
         type: integer
+    type: object
+  github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      roles:
+        items:
+          type: string
+        type: array
+    required:
+    - email
+    - password
+    - permissions
+    - roles
     type: object
   utils.ErrorResponse:
     properties:
@@ -69,7 +90,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/user.AuthRequest'
+          $ref: '#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.AuthRequest'
       produces:
       - application/json
       responses:
@@ -80,7 +101,7 @@ paths:
             - $ref: '#/definitions/utils.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/user.LoginResponse'
+                  $ref: '#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.LoginResponse'
               type: object
         "400":
           description: Invalid request
@@ -91,6 +112,36 @@ paths:
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
       summary: Login with email
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Register with email
+      parameters:
+      - description: Register request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_tranthanhsang2k3_healthmate-backend_auth-service_internal_models_user.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Register successful
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: Register with email
       tags:
       - auth
 schemes:
